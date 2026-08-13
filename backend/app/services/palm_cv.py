@@ -5,7 +5,7 @@ import numpy as np
 from PIL import Image as PILImage
 from io import BytesIO
 
-# Try to import cv2, otherwise use fallback PIL logic
+# Try to import cv2, otherwise use fallback PIL logic 
 try:
     import cv2
 except ImportError:
