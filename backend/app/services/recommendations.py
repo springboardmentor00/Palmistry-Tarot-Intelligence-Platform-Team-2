@@ -55,3 +55,4 @@ class RecommendationEngine:
 
         db.commit()
         return generated
+ 
