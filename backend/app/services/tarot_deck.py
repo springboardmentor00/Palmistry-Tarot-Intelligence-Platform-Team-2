@@ -2,11 +2,20 @@ import random
 from sqlalchemy.orm import Session
 from backend.app.models.sql_models import TarotCard
 
+
 class TarotDeckService:
+
     @staticmethod
     def seed_tarot_deck(db: Session):
-        # Check if already seeded
-        if db.query(TarotCard).count() >= 78:
+        """
+        Seeds the 78-card Tarot deck into the database safely and idempotently.
+        """
+        # Retrieve existing IDs and names to prevent primary key and duplicate name errors
+        existing_records = db.query(TarotCard.id, TarotCard.name).all()
+        existing_ids = set(r[0] for r in existing_records)
+        existing_names = set(r[1] for r in existing_records)
+
+        if len(existing_names) >= 78:
             return
 
         major_arcana = [
@@ -42,8 +51,12 @@ class TarotDeckService:
 
         # 1. Seed Major Arcana
         for idx, (name, keywords) in enumerate(major_arcana):
+            card_id = idx + 1
+            if name in existing_names or card_id in existing_ids:
+                continue
+
             card = TarotCard(
-                id=idx + 1,
+                id=card_id,
                 name=name,
                 arcana="Major",
                 suit="None",
@@ -65,9 +78,15 @@ class TarotDeckService:
             # Seed Pips (Ace to Ten)
             for idx, pip in enumerate(pip_cards):
                 val_name = f"{pip} of {suit}"
+                current_id = card_id
+                card_id += 1
+
+                if val_name in existing_names or current_id in existing_ids:
+                    continue
+
                 keywords = [suit[:-1], pip, "Cycle Step", "Energy"]
                 card = TarotCard(
-                    id=card_id,
+                    id=current_id,
                     name=val_name,
                     arcana="Minor",
                     suit=suit,
@@ -82,14 +101,19 @@ class TarotDeckService:
                     symbolism=f"Illustrates the numerical progression of the element representing {suit.lower()}."
                 )
                 cards_to_insert.append(card)
-                card_id += 1
 
             # Seed Court Cards
             for court in court_cards:
                 val_name = f"{court} of {suit}"
+                current_id = card_id
+                card_id += 1
+
+                if val_name in existing_names or current_id in existing_ids:
+                    continue
+
                 keywords = [suit[:-1], court, "Persona", "Message"]
                 card = TarotCard(
-                    id=card_id,
+                    id=current_id,
                     name=val_name,
                     arcana="Minor",
                     suit=suit,
@@ -104,14 +128,13 @@ class TarotDeckService:
                     symbolism=f"Depicts the personification of the elemental lessons of the suit of {suit.lower()}."
                 )
                 cards_to_insert.append(card)
-                card_id += 1
 
-        db.add_all(cards_to_insert)
-        db.commit()
+        if cards_to_insert:
+            db.add_all(cards_to_insert)
+            db.commit()
 
     @staticmethod
     def draw_spread(db: Session, spread_name: str) -> list:
-        # Get all card ids
         all_cards = db.query(TarotCard).all()
         if not all_cards:
             raise ValueError("Tarot deck is not seeded.")
@@ -119,18 +142,37 @@ class TarotDeckService:
         count_map = {
             "single": 1,
             "three": 3,
+            "relationship": 5,
+            "career": 5,
             "celtic": 10
         }
-        count = count_map.get(spread_name, 1)
+        normalized_name = spread_name.lower().strip()
+        count = count_map.get(normalized_name, 1)
 
         drawn_cards = random.sample(all_cards, count)
         positions = []
-        
-        if spread_name == "single":
+
+        if normalized_name == "single":
             positions = ["Core Focus"]
-        elif spread_name == "three":
+        elif normalized_name == "three":
             positions = ["Past", "Present", "Future"]
-        elif spread_name == "celtic":
+        elif normalized_name == "relationship":
+            positions = [
+                "1. Your Energy",
+                "2. Partner Energy",
+                "3. Core Dynamics",
+                "4. Main Obstacle",
+                "5. Potential Outcome"
+            ]
+        elif normalized_name == "career":
+            positions = [
+                "1. Current Position",
+                "2. Immediate Challenge",
+                "3. Hidden Factor",
+                "4. Recommended Action",
+                "5. Future Prospect"
+            ]
+        elif normalized_name == "celtic":
             positions = [
                 "1. Present Foundation",
                 "2. Immediate Challenge",
@@ -154,5 +196,5 @@ class TarotDeckService:
                 "position_name": positions[idx],
                 "is_reversed": is_reversed
             })
-            
+
         return results
