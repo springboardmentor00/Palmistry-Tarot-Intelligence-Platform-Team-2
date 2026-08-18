@@ -3,6 +3,7 @@ from sqlalchemy import Column, Integer, String, Boolean, DateTime, Float, Foreig
 from sqlalchemy.orm import relationship
 from backend.app.database.postgres import Base
 
+
 class User(Base):
     __tablename__ = "users"
 
@@ -14,6 +15,7 @@ class User(Base):
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
+    # Relationships
     profile = relationship("UserProfile", back_populates="user", uselist=False, cascade="all, delete-orphan")
     palm_readings = relationship("PalmReading", back_populates="user", cascade="all, delete")
     tarot_readings = relationship("TarotReading", back_populates="user", cascade="all, delete")
@@ -27,8 +29,8 @@ class UserProfile(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
     age_group = Column(String, nullable=True)
-    interests = Column(JSON, default=[], nullable=True)  # List of strings
-    goals = Column(JSON, default=[], nullable=True)      # List of strings
+    interests = Column(JSON, default=[], nullable=True)    # List of strings
+    goals = Column(JSON, default=[], nullable=True)        # List of strings
     preferences = Column(JSON, default={}, nullable=True)  # Dict config
     updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
@@ -41,7 +43,7 @@ class TarotCard(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True, nullable=False)
     arcana = Column(String, nullable=False)  # Major, Minor
-    suit = Column(String, nullable=True)    # Cups, Wands, Swords, Pentacles, None
+    suit = Column(String, nullable=True)     # Cups, Wands, Swords, Pentacles, None
     keywords = Column(JSON, default=[], nullable=False)  # List of keywords
     meaning_upright = Column(Text, nullable=False)
     meaning_reversed = Column(Text, nullable=False)
@@ -63,13 +65,16 @@ class PalmReading(Base):
     palm_shape = Column(String, nullable=True)
     finger_structure = Column(String, nullable=True)
     
-    # Confidence metrics
+    # Confidence metrics[cite: 1]
     life_line_conf = Column(Float, default=0.0)
     head_line_conf = Column(Float, default=0.0)
     heart_line_conf = Column(Float, default=0.0)
     fate_line_conf = Column(Float, default=0.0)
     sun_line_conf = Column(Float, default=0.0)
     overall_conf = Column(Float, default=0.0)
+    
+    # Vector keypoints & contour data extracted during CV analysis[cite: 1]
+    hand_features = Column(JSON, default={}, nullable=True)
     
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
@@ -81,7 +86,7 @@ class TarotReading(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    spread_name = Column(String, nullable=False)  # single, three, celtic, etc.
+    spread_name = Column(String, nullable=False)  # single, three, relationship, career, celtic[cite: 1]
     focus_intent = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
