@@ -7,6 +7,7 @@ class UserRegister(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=6)
     full_name: str
+    role: Optional[str] = "USER"  # <--- ADDED: Allows registering with custom roles
     age_group: Optional[str] = "25-34"
     interests: List[str] = []
     goals: List[str] = []
