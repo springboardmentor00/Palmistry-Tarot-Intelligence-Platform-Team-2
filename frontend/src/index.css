@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #0c0714;
+  color: #ede9fe;
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+}
+
+.glass-panel {
+  background: rgba(20, 15, 30, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(139, 92, 246, 0.15);
+}
+
+.glass-input {
+  background: rgba(10, 5, 15, 0.5);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  color: #ede9fe;
+  transition: all 0.3s ease;
+}
+
+.glass-input:focus {
+  border-color: #fbbf24;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.2);
+  outline: none;
+}
