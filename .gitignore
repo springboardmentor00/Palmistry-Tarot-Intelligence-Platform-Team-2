@@ -1,0 +1,41 @@
+# Secrets / local configuration
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+ENV/
+
+# Local databases / generated data
+*.db
+*.sqlite
+*.sqlite3
+static/palm_images/*
+!static/palm_images/.gitkeep
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Logs / temp
+*.log
+tmp/
+temp/
+*.tmp
